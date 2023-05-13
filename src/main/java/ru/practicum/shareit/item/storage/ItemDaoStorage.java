@@ -89,15 +89,9 @@ public class ItemDaoStorage implements Dao, ItemStorage {
             }
         }
 
-        if (description.isPresent()) {
-            itemDtoToChange.get().setDescription(itemDto.getDescription());
-        }
-        if (available.isPresent()) {
-            itemDtoToChange.get().setAvailable(available.get());
-        }
-        if (name.isPresent()) {
-            itemDtoToChange.get().setName(name.get());
-        }
+        description.ifPresent(d -> itemDtoToChange.get().setDescription(itemDto.getDescription()));
+        available.ifPresent(aBoolean -> itemDtoToChange.get().setAvailable(aBoolean));
+        name.ifPresent(s -> itemDtoToChange.get().setName(s));
 
         items.replace(itemId, itemDtoToChange.get());
 
@@ -128,7 +122,7 @@ public class ItemDaoStorage implements Dao, ItemStorage {
                 .stream()
                 .filter(itemDto -> (itemDto.getDescription().toLowerCase().contains(text.toLowerCase())
                         || itemDto.getName().toLowerCase().contains(text.toLowerCase()))
-                        & itemDto.getAvailable())
+                        && itemDto.getAvailable())
                 .collect(Collectors.toList());
     }
 

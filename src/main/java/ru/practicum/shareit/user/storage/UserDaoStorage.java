@@ -13,7 +13,7 @@ import java.util.*;
 public class UserDaoStorage implements Dao, UserStorage {
 
     public static long id = 1;
-    public static HashMap<Long, UserDto> users = new HashMap<>();
+    public static final HashMap<Long, UserDto> users = new HashMap<>();
 
     @Override
     public UserDto get(long id) {
@@ -62,12 +62,8 @@ public class UserDaoStorage implements Dao, UserStorage {
         }
 
 
-        if (email.isPresent()) {
-            userDtoActual.setEmail(email.get());
-        }
-        if (name.isPresent()) {
-            userDtoActual.setName(name.get());
-        }
+        email.ifPresent(userDtoActual::setEmail);
+        name.ifPresent(userDtoActual::setName);
 
         log.info("Updated user account information from UserStorage: {}", userDto);
         users.put(id, userDtoActual);
@@ -85,9 +81,7 @@ public class UserDaoStorage implements Dao, UserStorage {
         if (email != null) {
             return users.values()
                     .stream()
-                    .filter(userDtoUsers -> userDtoUsers.getEmail().contains(email))
-                    .findFirst()
-                    .isPresent();
+                    .anyMatch(userDtoUsers -> userDtoUsers.getEmail().contains(email));
         } else {
             return false;
         }
@@ -95,10 +89,7 @@ public class UserDaoStorage implements Dao, UserStorage {
 
     public static UserDto checkExistenceUser(long userId) {
         Optional<UserDto> userDto = Optional.ofNullable(users.get(userId));
-        if (userDto.isPresent()) {
-            return userDto.get();
-        }
-        return userDto.get();
+        return userDto.orElseGet(userDto::get);
     }
 
     public static long generatorId() {
