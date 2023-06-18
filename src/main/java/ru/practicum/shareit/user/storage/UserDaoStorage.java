@@ -2,97 +2,59 @@ package ru.practicum.shareit.user.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.dao.Dao;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 @Repository
 @Slf4j
-public class UserDaoStorage implements Dao, UserStorage {
+public class UserDaoStorage implements UserStorage {
 
-    public static long id = 1;
-    public static final HashMap<Long, UserDto> users = new HashMap<>();
+    public long id = 1;
+    public static final HashMap<Long, User> users = new HashMap<>();
 
     @Override
-    public UserDto get(long id) {
-        UserDto userDto = users.get(id);
-        log.info("User account information from UserStorage: {}", userDto);
-        return userDto;
+    public User get(long id) {
+        User user = users.get(id);
+        log.debug("User account information from UserStorage: {}", user);
+        return user;
     }
 
     @Override
-    public List getAllUsers() {
-        List<UserDto> selectedUsers = new ArrayList<>(users.values());
-        log.info("Users account information from UserStorage: {}", selectedUsers);
+    public List<User> getAllUsers() {
+        List<User> selectedUsers = new ArrayList<>(users.values());
+        log.debug("Users account information from UserStorage: {}", selectedUsers);
         return selectedUsers;
     }
 
     @Override
-    public UserDto saveUserDto(UserDto userDto) {
-        if (checkExistenceEmail(userDto.getEmail())) {
-            throw new ExistenceOfObjectException(String.format("User with email %s is already existed",
-                    userDto.getEmail()));
-        }
-        userDto.setId(generatorId());
-        log.info("Saved user account information from UserStorage: {}", userDto);
-        users.put(userDto.getId(), userDto);
-        return userDto;
+    public User saveUser(User user) {
+        users.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public UserDto update(Object o, long id) {
+    public User update(User user, long id) {
 
-        UserDto userDto = (UserDto) o;
+        log.debug("Updated user account information from UserStorage: {}", user);
+        users.put(id, user);
 
-        Optional<String> email = Optional.ofNullable(userDto.getEmail());
-        Optional<String> name = Optional.ofNullable(userDto.getName());
-
-        UserDto userDtoActual = users.get(id);
-        userDto.setId(id);
-
-        if (email.isPresent()) {
-            if (!email.get().equals(userDtoActual.getEmail())) {
-                if (checkExistenceEmail(userDto.getEmail())) {
-                    throw new ExistenceOfObjectException(String.format("User with email %s is already existed",
-                            userDto.getEmail()));
-                }
-            }
-        }
-
-
-        email.ifPresent(userDtoActual::setEmail);
-        name.ifPresent(userDtoActual::setName);
-
-        log.info("Updated user account information from UserStorage: {}", userDto);
-        users.put(id, userDtoActual);
-
-        return userDtoActual;
+        return users.get(id);
     }
 
     @Override
     public void delete(long userId) {
-        log.info("Deleted user account information from UserStorage: {}", userId);
+        log.debug("Deleted user account information from UserStorage: {}", userId);
         users.remove(userId);
     }
 
-    public static boolean checkExistenceEmail(String email) {
-        if (email != null) {
-            return users.values()
-                    .stream()
-                    .anyMatch(userDtoUsers -> userDtoUsers.getEmail().contains(email));
-        } else {
-            return false;
-        }
+    public HashMap<Long, User> getUsers() {
+        return users;
     }
 
-    public static UserDto checkExistenceUser(long userId) {
-        Optional<UserDto> userDto = Optional.ofNullable(users.get(userId));
-        return userDto.orElseGet(userDto::get);
-    }
-
-    public static long generatorId() {
+    public long generatorId() {
         return id++;
     }
 

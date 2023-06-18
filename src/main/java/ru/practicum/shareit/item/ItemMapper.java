@@ -8,11 +8,23 @@ public class ItemMapper {
         return ItemDto.builder()
                 .owner(item.getOwner())
                 .id(item.getId())
-                .available(item.isAvailable())
+                .available(item.getAvailable())
                 .name(item.getName())
                 .request(item.getRequest())
                 .description(item.getDescription())
                 .build();
     }
+
+    public static Item toItem(ItemDto itemDto) {
+        return Item.builder()
+                .owner(itemDto.getOwner())
+                .id(itemDto.getId())
+                .available(itemDto.getAvailable())
+                .name(itemDto.getName())
+                .request(itemDto.getRequest())
+                .description(itemDto.getDescription())
+                .build();
+    }
+
 
 }
