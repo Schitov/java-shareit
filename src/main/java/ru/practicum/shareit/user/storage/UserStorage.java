@@ -2,7 +2,6 @@ package ru.practicum.shareit.user.storage;
 
 import ru.practicum.shareit.user.model.User;
 
-import javax.validation.constraints.Email;
 import java.util.HashMap;
 import java.util.List;
 
