@@ -83,8 +83,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Item saveItem(ItemDto itemDto, long userId) {
-        // Преобразуем ItemDto в объект Item с помощью ItemMapper
-        Item item = ItemMapper.toItem(itemDto);
+
         // Получаем пользователя с заданным userId из userDaoStorage и оборачиваем его в Optional
         Optional<User> user = Optional.ofNullable(userDaoStorage.get(userId));
 
@@ -94,6 +93,8 @@ public class ItemServiceImpl implements ItemService {
             throw new ExistenceOfUserException(String.format("User with id %d doesn't exist",
                     userId));
         }
+        // Преобразуем ItemDto в объект Item с помощью ItemMapper
+        Item item = ItemMapper.toItem(itemDto);
 
         // Устанавливаем владельца для товара, используя полученного пользователя
         item.setOwner(user.get());
