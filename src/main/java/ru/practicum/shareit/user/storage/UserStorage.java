@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.storage;
 
 import ru.practicum.shareit.user.model.User;
 
+import javax.validation.constraints.Email;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,7 +13,7 @@ public interface UserStorage {
 
     void delete(long userId);
 
-    User update(User user, long id);
+    User update(User user, String email, long id);
 
     User get(long id);
 
