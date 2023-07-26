@@ -10,6 +10,7 @@ import ru.practicum.shareit.user.service.UserServiceImpl;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -25,7 +26,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User obtainUser(@PathVariable long userId) {
+    public Optional obtainUser(@PathVariable long userId) {
         log.debug("Параметр, полученный в методе obtainUser: {}", userId);
         return userService.obtainUser(userId);
     }

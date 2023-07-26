@@ -9,6 +9,8 @@ import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
 import ru.practicum.shareit.exception.exceptions.ExistenceOfUserException;
 import ru.practicum.shareit.exception.exceptions.ValidException;
 
+import java.util.NoSuchElementException;
+
 
 @RestControllerAdvice
 public class ErrorHandlerController {
@@ -39,6 +41,14 @@ public class ErrorHandlerController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleExistenceOfUser(final ExistenceOfUserException e) {
+        return new ErrorResponse(
+                "Existence of user error", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleExistenceOfUserId(final NoSuchElementException e) {
         return new ErrorResponse(
                 "Existence of user error", e.getMessage()
         );

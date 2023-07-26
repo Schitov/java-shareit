@@ -9,6 +9,7 @@ import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.storage.UserDaoStorage;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.*;
 
@@ -18,15 +19,20 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
 
     UserDaoStorage userDaoStorage;
+    UserRepository userRepository;
 
     @Autowired
-    UserServiceImpl(UserDaoStorage userDaoStorage) {
+    UserServiceImpl(UserDaoStorage userDaoStorage, UserRepository userRepository) {
         this.userDaoStorage = userDaoStorage;
+        this.userRepository = userRepository;
     }
 
     @Override
-    public User obtainUser(long id) {
-        return userDaoStorage.get(id);
+    public Optional obtainUser(long id) {
+//        return userDaoStorage.get(id);
+        Optional user;
+        user = userRepository.findById(id);
+        return user;
     }
 
     @Override
@@ -75,14 +81,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public User saveUser(UserDto userDto) {
         User user = UserMapper.dtoToUser(userDto);
-        HashSet<String> emails = userDaoStorage.getEmails();
-        if (emails.contains(user.getEmail())) {
-            throw new ExistenceOfObjectException(String.format("User with email %s is already existed",
-                    user.getEmail()));
-        }
-        user.setId(userDaoStorage.generatorId());
-        log.info("Saved user account information from UserStorage: {}", user);
-
-        return userDaoStorage.saveUser(user);
+        userRepository.save(user);
+        return userRepository.findByEmail(user.getEmail());
+//        HashSet<String> emails = userDaoStorage.getEmails();
+//        if (emails.contains(user.getEmail())) {
+//            throw new ExistenceOfObjectException(String.format("User with email %s is already existed",
+//                    user.getEmail()));
+//        }
+//        user.setId(userDaoStorage.generatorId());
+//        log.info("Saved user account information from UserStorage: {}", user);
+//
+//        return userDaoStorage.saveUser(user);
     }
 }
