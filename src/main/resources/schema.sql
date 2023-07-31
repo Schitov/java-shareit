@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS REQUESTS (
  	owner_id BIGINT,
  	request_id BIGINT,
  	name VARCHAR(255) NOT NULL,
+ 	available   BOOLEAN      NOT NULL,
  	description VARCHAR(1000),
  	CONSTRAINT fk_items_to_users FOREIGN KEY(owner_id) REFERENCES users(user_id),
  	CONSTRAINT fk_requests_to_users FOREIGN KEY(request_id) REFERENCES REQUESTS(request_id)

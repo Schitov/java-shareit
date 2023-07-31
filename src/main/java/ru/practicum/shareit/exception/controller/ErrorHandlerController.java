@@ -4,10 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.exception.exceptions.ErrorResponse;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfUserException;
-import ru.practicum.shareit.exception.exceptions.ValidException;
+import ru.practicum.shareit.exception.exceptions.*;
 
 import java.util.NoSuchElementException;
 
@@ -23,10 +20,27 @@ public class ErrorHandlerController {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleBookingException(final BookingException e) {
+        return new ErrorResponse(
+                "You can't booking your thing", e.getMessage()
+        );
+    }
+
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleExistenceOfObjects(final ExistenceOfObjectException e) {
         return new ErrorResponse(
                 "Existence error", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleBlockedException(final BlockedException e) {
+        return new ErrorResponse(
+                "Item is already boocked", e.getMessage()
         );
     }
 
@@ -47,10 +61,26 @@ public class ErrorHandlerController {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleExistenceOfItem(final ExistenceOfItemException e) {
+        return new ErrorResponse(
+                "Existence of item error", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleExistenceOfUserId(final NoSuchElementException e) {
         return new ErrorResponse(
                 "Existence of user error", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleAuthorizationOfUser(final UnauthorizedOperationException e) {
+        return new ErrorResponse(
+                "Authorization of user error", e.getMessage()
         );
     }
 }
