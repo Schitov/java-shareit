@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "comment")
+@Table(name = "comments")
 public class Comment {
     @Id
     @Column(name = "comment_id")
@@ -23,8 +23,9 @@ public class Comment {
     @ManyToOne(fetch = FetchType.LAZY) // Many items can be associated with one user
     @JoinColumn(name = "item_id") // The column that links the User entity
     Item item;
-    @ManyToOne(fetch = FetchType.LAZY) // Many items can be associated with one user
-    @JoinColumn(name = "user_id") // The column that links the User entity
+
+    @ManyToOne
+    @JoinColumn(name = "author_id", referencedColumnName = "user_id")
     User author;
     LocalDateTime created;
 }

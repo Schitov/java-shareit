@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 @Slf4j
-public class BookingServiceImpl implements BookingService  {
+public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
@@ -33,14 +34,23 @@ public class BookingServiceImpl implements BookingService  {
     @Override
     @Transactional
     public BookingDto saveBooking(BookingCreateDto bookingDto, long userId) {
-        log.debug("UserId: {userId}. BookingDto: {bookingDto}");
+        log.debug("UserId: {}. BookingDto: {}", userId, bookingDto.getId());
+        if ((bookingDto.getEnd() == null) | (bookingDto.getStart() == null)) { // Дата начала и дата окончания заданы
+            throw new ExistenceDateException("Empty date");
+        }
         User user = userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("Not found user"));
         Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new ExistenceOfItemException("Not found Item"));
-        log.debug("User: {user}. Item: {item}. BookingDto: {bookingDto}");
-        if (item.getAvailable() && (user.getId() != item.getOwner().getId())) {
-            return BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toNewBooking(bookingDto, user, item)));
-        } else if (user.equals(item.getOwner())) {
+        log.debug("User: {uer}. Item: {}. BookingDto: {}", userId, item.getId(), bookingDto.getId());
+
+        if (user.equals(item.getOwner())) {
             throw new BookingException("Booking coudn't be completed");
+        } else if (bookingDto.getEnd().isBefore(bookingDto.getStart()) // Дата старта раньше даты окончания
+                | bookingDto.getEnd().equals(bookingDto.getStart())) {
+            throw new DateIntersectionException("Date intersection");
+        } else if (bookingDto.getStart().isBefore(LocalDateTime.now())) { // Дата начала и дата окончания аренды не могут находиться в прошлом
+            throw new DateIntersectionException("End date couldn't be in past");
+        } else if (item.getAvailable() && (user.getId() != item.getOwner().getId())) {
+            return BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toNewBooking(bookingDto, user, item)));
         } else {
             throw new BlockedException("Item is blocked");
         }
@@ -49,7 +59,13 @@ public class BookingServiceImpl implements BookingService  {
     @Override
     @Transactional
     public BookingDto updateBookingStatus(long userId, long bookingId, Boolean isApproved) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new ExistenceOfObjectException("Бронирование не найдено"));
+        Booking booking = bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() -> new ExistenceOfBookingException("Booking is not found, sorry"));
+
+        log.debug("Значения в updateBookingStatus: " +
+                "User: {}. Item: {}. Approval: {}", userId, bookingId, isApproved);
+
         if (booking.getItem().getOwner().getId() != userId) {
             throw new BookingException("Booking coudn't be completed");
         }
@@ -62,15 +78,25 @@ public class BookingServiceImpl implements BookingService  {
 
     @Override
     public BookingDto getBookingById(long userId, long bookingId) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() -> new ExistenceOfObjectException("Booking isn't existed"));
+
+        log.debug("Значения в getBookingById: " +
+                "User: {}. bookingId: {}", userId, bookingId);
+
+        Booking booking = bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() -> new ExistenceOfBookingException("Booking isn't existed"));
         if (booking.getBooker().getId() != userId && booking.getItem().getOwner().getId() != userId) {
-            throw new ExistenceOfObjectException("Booking isn't existed");
+            throw new ExistenceOfUserException("User isn't existed");
         }
         return BookingMapper.toBookingDto(booking);
     }
 
     @Override
     public List<BookingDto> getUsersBookings(long userId, State state) {
+
+        log.debug("Значения в getUsersBookings: " +
+                "userId: {}. State: {}", userId, state);
+
         userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("User isn't existed"));
         List<Booking> res = null;
         switch (state) {
@@ -79,7 +105,8 @@ public class BookingServiceImpl implements BookingService  {
                         userId, LocalDateTime.now(), LocalDateTime.now());
                 break;
             case FUTURE:
-                res = bookingRepository.findBookingsByBooker_IdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
+                res = bookingRepository
+                        .findBookingsByBooker_IdAndStartAfterOrderByStartDesc(userId, LocalDateTime.now());
                 break;
             case PAST:
                 res = bookingRepository.findBookingsByBooker_IdAndStartBeforeAndEndBeforeOrderByStartDesc(
@@ -100,7 +127,10 @@ public class BookingServiceImpl implements BookingService  {
     @Override
     public List<BookingDto> getUserItemsBookings(long userId, State state) {
         userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("User isn't existed"));
-        List<Long> itemIds = itemRepository.findByOwnerId(userId).stream().map(Item::getId).collect(Collectors.toList());
+
+        log.debug("Значения в getUserItemsBookings: userId: {}. State: {}", userId, state);
+
+        List<Long> itemIds = itemRepository.findByOwnerId(userId, Sort.by("id")).stream().map(Item::getId).collect(Collectors.toList());
         List<Booking> res = null;
         switch (state) {
             case CURRENT:

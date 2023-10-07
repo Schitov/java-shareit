@@ -45,7 +45,7 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public Comment addCommentToItem(@PathVariable Long itemId, @RequestBody CommentDto commentDto, @RequestHeader(X_SHARER_USER_ID) Long userId) {
+    public CommentDto addCommentToItem(@PathVariable Long itemId, @RequestBody CommentDto commentDto, @RequestHeader(X_SHARER_USER_ID) Long userId) {
         log.debug("For item {} of owner {} will be added comment: {}", itemId, userId, commentDto);
         return itemService.addCommentToItem(itemId, commentDto, userId);
     }
@@ -71,7 +71,6 @@ public class ItemController {
     public List<ItemDto> searchItemsByText(@RequestParam String text) {
         log.debug("Параметр, полученный в методе searchItemsByText: {}", text);
         return itemService.findByDescriptionContainingIgnoreCase(text);
-//        return itemService.searchItemsByText(text);
     }
 
 }

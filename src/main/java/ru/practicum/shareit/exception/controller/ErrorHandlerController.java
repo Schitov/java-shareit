@@ -20,12 +20,37 @@ public class ErrorHandlerController {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleBookingException(final BookingException e) {
         return new ErrorResponse(
                 "You can't booking your thing", e.getMessage()
         );
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleDateIntersection(final DateIntersectionException e) {
+        return new ErrorResponse(
+                "End date must be after start date", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleExistenceDate(final ExistenceDateException e) {
+        return new ErrorResponse(
+                "Date must be existed", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleUnsupportedState(final UnsupportedStateException e) {
+        return new ErrorResponse(
+                e.getMessage()
+        );
+    }
+
 
 
     @ExceptionHandler
@@ -37,7 +62,7 @@ public class ErrorHandlerController {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBlockedException(final BlockedException e) {
         return new ErrorResponse(
                 "Item is already boocked", e.getMessage()
@@ -83,4 +108,21 @@ public class ErrorHandlerController {
                 "Authorization of user error", e.getMessage()
         );
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleExistenceOfBooking(final ExistenceOfBookingException e) {
+        return new ErrorResponse(
+                "Booking is not existed", e.getMessage()
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleAddingComment(final UnauthorizedAddingCommentException e) {
+        return new ErrorResponse(
+                "Authorization of user error", e.getMessage()
+        );
+    }
+
 }

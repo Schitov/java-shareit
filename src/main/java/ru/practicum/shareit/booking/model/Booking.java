@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "booking")
+@Table(name = "BOOKINGS")
 public class Booking {
     @Id
     @Column(name = "booking_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long id;
-    @Column(name = "start_time")
+    @Column(name = "start_date")
     LocalDateTime start;
-    @Column(name = "end_time")
+    @Column(name = "end_date")
     LocalDateTime end;
     @ManyToOne
     @JoinColumn(name = "item_id", referencedColumnName = "item_id")

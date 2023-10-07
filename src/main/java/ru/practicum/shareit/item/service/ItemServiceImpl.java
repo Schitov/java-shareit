@@ -3,13 +3,13 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfItemException;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfUserException;
-import ru.practicum.shareit.exception.exceptions.UnauthorizedOperationException;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingCreateDto;
+import ru.practicum.shareit.enums.Status;
+import ru.practicum.shareit.exception.exceptions.*;
 import ru.practicum.shareit.item.ItemMapper;
-import ru.practicum.shareit.item.comment.CommentMapper;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.comment.repository.CommentRepository;
@@ -18,12 +18,12 @@ import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.item.storage.ItemDaoStorage;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.storage.UserDaoStorage;
 
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ItemServiceImpl implements ItemService {
 
     ItemDaoStorage itemDaoStorage;
@@ -48,52 +49,73 @@ public class ItemServiceImpl implements ItemService {
         this.commentRepository = commentRepository;
     }
 
+    @Transactional
     public ItemOwnerDto obtainItem(long id, long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("User with id " + userId + " not found"));
-        UserDto userDto = UserMapper.userToDto(user);
 
+        log.debug("Параметры, полученные в методе obtainItem: id - {}, userId - {}", id, userId);
 
+        Item itemInit = itemRepository.findItemByIdWithComments(id).orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
+        if(userId != itemInit.getOwner().getId()) {
+            return ItemMapper.toItemDtoOwner(itemInit);
+        }
 
-        Item item = itemRepository.findById(id).orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
-        ItemOwnerDto itemOwnerDto = ItemMapper.toItemDtoOwner(item);
-        itemOwnerDto.setOwnerId(userDto.getId());
+        Item item = itemRepository.findBookingsInItemById(id).orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
+        List<BookingCreateDto> bookingCreateDto = item.getBookings().stream().filter(b -> b.getStatus() == Status.APPROVED).map(BookingMapper::toBookingCreateDto).collect(Collectors.toList());
+        ItemOwnerDto itemOwnerDto = ItemMapper.toItemDtoOwner(item, bookingCreateDto);
+
         return itemOwnerDto;
     }
 
-//    public List<Item> obtainAllItems(long userId) {
-//
-//        return itemDaoStorage.getAllItems(userId)
-//                .stream()
-//                .filter(item -> item.getOwner().getId() == userId)
-//                .collect(Collectors.toList());
-//    }
-
+    @Transactional
     public void deleteItem(long id) {
         itemRepository.deleteById(id);
     }
 
     public List<ItemOwnerDto> getItemsByOwnerId(Long ownerId) {
-        return itemRepository.findByOwnerId(ownerId).stream()
-                .map(ItemMapper::toItemDtoOwner)
+
+        log.debug("Параметр, полученный в методе getItemsByOwnerId: id - {}", ownerId);
+
+        return itemRepository.findItemsWithBookings(itemRepository.findByOwnerId(ownerId, Sort.by("id")))
+                .stream()
+                .map(item -> ItemMapper.toItemDtoOwner(
+                        item,
+                        item.getBookings().stream().map(BookingMapper::toBookingCreateDto).collect(Collectors.toList())
+                ))
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public CommentDto addCommentToItem(Long itemId, CommentDto commentDto, Long userId) {
+        // Check if the item, user exists
 
-    public Comment addCommentToItem(Long itemId, CommentDto commentDto, Long userId) {
-        // Check if the item exists
-        Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new ExistenceOfObjectException("Item not found."));
-
-        // Check if the user has rented the item
-        if (item.getOwner().getId() != userId) {
-            throw new UnauthorizedOperationException("You are not authorized to add a comment for this item.");
+        log.debug("Параметры, полученные в методе addCommentToItem: id - {}, userId - {}, текст комментария - {}"
+                , itemId, userId, commentDto.getText());
+        String text = commentDto.getText();
+        if (text.isEmpty()) {
+            throw new ValidException("Text musn't be empty");
         }
 
-        Comment comment = CommentMapper.toComment(commentDto);
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new ExistenceOfObjectException("Item not found."));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ExistenceOfUserException("User not found."));
 
-        return commentRepository.save(comment);
+
+        boolean isPositive = item.getBookings().stream()
+                .anyMatch(booking -> (booking.getBooker().getId() == userId) &
+                        booking.getEnd().isBefore(LocalDateTime.now()));
+
+        // Check if the user has rented the item
+        if (!isPositive) {
+            throw new UnauthorizedAddingCommentException("You are not authorized to add a comment for this item.");
+        }
+
+        Comment comment = ItemMapper.toNewComment(commentDto, user, item);
+
+        return ItemMapper.toCommentDto(commentRepository.save(comment));
     }
 
+    @Transactional
     public ItemDto updateItem(ItemDto itemDto, long itemId, long userId) {
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new ExistenceOfItemException("Not found item"));
         if (item.getOwner().getId() != userId) {
@@ -115,7 +137,11 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
+    @Transactional
     public Item saveItem(ItemDto itemDto, long ownerId) {
+
+        log.debug("Параметры, полученные в методе saveItem: id - {}, userId - {}"
+                , itemDto.getId(), ownerId);
 
         // Check if the User with the specified ownerId exists in the database
         User owner = userRepository.findById(ownerId)
@@ -129,11 +155,6 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.save(item);
 
     }
-
-//    public List<Item> searchItemsByText(String searchText) {
-//        searchText = searchText.toLowerCase();
-//        return itemRepository.findByDescriptionContainingIgnoreCase(searchText);
-//    }
 
     public List<ItemDto> findByDescriptionContainingIgnoreCase(String searchText) {
         if(searchText.isEmpty()) {
@@ -163,20 +184,4 @@ public class ItemServiceImpl implements ItemService {
                 .map(ItemMapper::toItemDto)
                 .collect(Collectors.toList());
     }
-
-//    public List<Item> searchItemsByText(String text) {
-//
-//        if (text.isEmpty()) {
-//            return new ArrayList<>();
-//        }
-//
-//        return itemDaoStorage.search(text)
-//                .stream()
-//                .filter(itemDto -> (itemDto.getDescription().toLowerCase().contains(text.toLowerCase())
-//                        || itemDto.getName().toLowerCase().contains(text.toLowerCase()))
-//                        && itemDto.getAvailable())
-//                .collect(Collectors.toList());
-//    }
-
-
 }

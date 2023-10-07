@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    List<Item> findByOwnerId(long ownerId);
+    List<Item> findByOwnerId(long ownerId, Sort sort);
 
     boolean existsByOwnerEmail(Email email);
 
@@ -23,7 +24,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT item FROM Item item " +
             "LEFT JOIN FETCH item.comments c " +
             "WHERE item.id = :itemId")
-    List<Item> findItemByIdWithComments(long itemId);
+    Optional<Item> findItemByIdWithComments(long itemId);
 
     @Query(" SELECT DISTINCT item FROM Item item " +
             " LEFT JOIN FETCH item.comments c " +
@@ -33,8 +34,9 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT DISTINCT i FROM Item i " +
             "LEFT JOIN FETCH i.bookings " +
+            "LEFT JOIN FETCH i.owner " +
             "WHERE i.id = :itemId")
-    Item findItemWithBookingsById(Long itemId);
+    Optional <Item> findBookingsInItemById(Long itemId);
 
     @Query(" SELECT DISTINCT item FROM Item item " +
             " LEFT JOIN FETCH item.bookings book " +
