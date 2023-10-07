@@ -3,6 +3,8 @@ package ru.practicum.shareit.item.dto;
 import lombok.Builder;
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -20,4 +22,6 @@ public class ItemDto {
     private Integer requestId;
     private BookingCreateDto lastBooking;
     private BookingCreateDto nextBooking;
+    UserDto owner;
+    ItemRequest request;
 }

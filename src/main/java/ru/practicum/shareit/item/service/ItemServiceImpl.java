@@ -137,6 +137,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemMapper.toItemDto(itemRepository.save(item));
     }
 
+
     @Transactional
     public Item saveItem(ItemDto itemDto, long ownerId) {
 
@@ -159,7 +160,20 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> findByDescriptionContainingIgnoreCase(String searchText) {
         if(searchText.isEmpty()) {
             return new ArrayList<>();
+
+    public Item saveItem(ItemDto itemDto, long userId) {
+
+        // Получаем пользователя с заданным userId из userDaoStorage и оборачиваем его в Optional
+        Optional<User> user = Optional.ofNullable(userDaoStorage.get(userId));
+
+        // Проверяем, пустой ли Optional (пользователь не существует)
+        if (user.isEmpty()) {
+            // Генерируем исключение, указывая, что пользователь не существует
+            throw new ExistenceOfUserException(String.format("User with id %d doesn't exist",
+                    userId));
         }
+        // Преобразуем ItemDto в объект Item с помощью ItemMapper
+        Item item = ItemMapper.toItem(itemDto);
 
         log.debug("Search text is: {searchText}", searchText);
 
