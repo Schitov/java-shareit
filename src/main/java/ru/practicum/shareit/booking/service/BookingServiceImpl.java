@@ -35,7 +35,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingDto saveBooking(BookingCreateDto bookingDto, long userId) {
         log.debug("UserId: {}. BookingDto: {}", userId, bookingDto.getId());
-        if ((bookingDto.getEnd() == null) | (bookingDto.getStart() == null)) { // Дата начала и дата окончания заданы
+        if ((bookingDto.getEnd() == null) || (bookingDto.getStart() == null)) { // Дата начала и дата окончания заданы
             throw new ExistenceDateException("Empty date");
         }
         User user = userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("Not found user"));
@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
         if (user.equals(item.getOwner())) {
             throw new BookingException("Booking coudn't be completed");
         } else if (bookingDto.getEnd().isBefore(bookingDto.getStart()) // Дата старта раньше даты окончания
-                | bookingDto.getEnd().equals(bookingDto.getStart())) {
+                || bookingDto.getEnd().equals(bookingDto.getStart())) {
             throw new DateIntersectionException("Date intersection");
         } else if (bookingDto.getStart().isBefore(LocalDateTime.now())) { // Дата начала и дата окончания аренды не могут находиться в прошлом
             throw new DateIntersectionException("End date couldn't be in past");
