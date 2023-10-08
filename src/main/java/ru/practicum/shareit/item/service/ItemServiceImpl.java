@@ -116,7 +116,7 @@ public class ItemServiceImpl implements ItemService {
 
 
         boolean isPositive = item.getBookings().stream()
-                .anyMatch(booking -> (booking.getBooker().getId() == userId) &
+                .anyMatch(booking -> (booking.getBooker().getId() == userId) &&
                         booking.getEnd().isBefore(LocalDateTime.now()));
 
         // Check if the user has rented the item
