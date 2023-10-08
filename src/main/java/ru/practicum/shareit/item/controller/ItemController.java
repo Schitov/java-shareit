@@ -27,7 +27,8 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemOwnerDto obtainItem(@PathVariable long itemId, @RequestHeader(name = "X-Sharer-User-Id") long userId) {
+    public ItemOwnerDto obtainItem(@PathVariable long itemId,
+                                   @RequestHeader(name = "X-Sharer-User-Id") long userId) {
         log.debug("Параметр, полученный в методе obtainItem: {}", itemId);
         return itemService.obtainItem(itemId, userId);
     }
@@ -45,7 +46,9 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentDto addCommentToItem(@PathVariable Long itemId, @RequestBody CommentDto commentDto, @RequestHeader(X_SHARER_USER_ID) Long userId) {
+    public CommentDto addCommentToItem(@PathVariable Long itemId,
+                                       @RequestBody CommentDto commentDto,
+                                       @RequestHeader(X_SHARER_USER_ID) Long userId) {
         log.debug("For item {} of owner {} will be added comment: {}", itemId, userId, commentDto);
         return itemService.addCommentToItem(itemId, commentDto, userId);
     }

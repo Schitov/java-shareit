@@ -54,10 +54,7 @@ public class ItemMapper {
     }
 
     public static ItemDto toItemDto(Item item) {
-        UserDto userDto = UserMapper.userToDto(item.getOwner());
-
         return ItemDto.builder()
-                .owner(userDto)
                 .id(item.getId())
                 .available(item.getAvailable())
                 .name(item.getName())
@@ -67,7 +64,6 @@ public class ItemMapper {
     }
 
     public static Item toItem(ItemDto itemDto) {
-
         return Item.builder()
                 .id(itemDto.getId())
                 .available(itemDto.getAvailable())

@@ -130,7 +130,8 @@ public class BookingServiceImpl implements BookingService {
 
         log.debug("Значения в getUserItemsBookings: userId: {}. State: {}", userId, state);
 
-        List<Long> itemIds = itemRepository.findByOwnerId(userId, Sort.by("id")).stream().map(Item::getId).collect(Collectors.toList());
+        List<Long> itemIds = itemRepository
+                .findByOwnerId(userId, Sort.by("id")).stream().map(Item::getId).collect(Collectors.toList());
         List<Booking> res = null;
         switch (state) {
             case CURRENT:
@@ -138,7 +139,8 @@ public class BookingServiceImpl implements BookingService {
                         LocalDateTime.now(), LocalDateTime.now(), itemIds);
                 break;
             case FUTURE:
-                res = bookingRepository.findBookingsByStartAfterAndItem_IdInOrderByStartDesc(LocalDateTime.now(), itemIds);
+                res = bookingRepository
+                        .findBookingsByStartAfterAndItem_IdInOrderByStartDesc(LocalDateTime.now(), itemIds);
                 break;
             case PAST:
                 res = bookingRepository.findBookingsByStartBeforeAndEndBeforeAndItem_IdInOrderByStartDesc(
