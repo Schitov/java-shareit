@@ -34,16 +34,15 @@ public class BookingController {
     public BookingDto updateBookingStatus(@RequestHeader(name = "X-Sharer-User-Id") long userId,
                                           @PathVariable long bookingId,
                                           @RequestParam Boolean approved) {
-        log.debug("Параметр, полученный в методе updateBookingStatus: userId - {}, bookingId - {}, approval status - {}"
-                , userId, bookingId, approved);
+        log.debug("Параметр, полученный в методе updateBookingStatus: userId - {}, bookingId - {}, approval status - {}",
+                userId, bookingId, approved);
         return bookingService.updateBookingStatus(userId, bookingId, approved);
     }
 
     @GetMapping("/{bookingId}")
     public BookingDto getBookingById(@RequestHeader(name = "X-Sharer-User-Id") long userId,
                                      @PathVariable long bookingId) {
-        log.debug("Параметр, полученный в методе getBookingById: userId - {}, bookingId - {}"
-                , userId, bookingId);
+        log.debug("Параметр, полученный в методе getBookingById: userId - {}, bookingId - {}", userId, bookingId);
         return bookingService.getBookingById(userId, bookingId);
     }
 
@@ -51,8 +50,7 @@ public class BookingController {
     public List<BookingDto> getUsersBookings(@RequestHeader(name = "X-Sharer-User-Id") long userId,
                                              @RequestParam(value = "state", required = false, defaultValue = "ALL")
                                              String state) {
-        log.debug("Параметр, полученный в методе getUsersBookings: userId - {}, state - {}"
-                , userId, state);
+        log.debug("Параметр, полученный в методе getUsersBookings: userId - {}, state - {}", userId, state);
         try {
             return bookingService.getUsersBookings(userId, State.valueOf(state));
         } catch (IllegalArgumentException e) {
@@ -65,8 +63,7 @@ public class BookingController {
     public List<BookingDto> getUserItemsBookings(@RequestHeader(name = "X-Sharer-User-Id") long userId,
                                                  @RequestParam(value = "state", required = false, defaultValue = "ALL")
                                                  String state) {
-        log.debug("Параметр, полученный в методе getUserItemsBookings: userId - {}, state - {}"
-                , userId, state);
+        log.debug("Параметр, полученный в методе getUserItemsBookings: userId - {}, state - {}", userId, state);
         try {
             return bookingService.getUserItemsBookings(userId, State.valueOf(state));
         } catch (IllegalArgumentException e) {

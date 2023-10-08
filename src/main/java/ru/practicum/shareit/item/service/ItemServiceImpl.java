@@ -61,7 +61,7 @@ public class ItemServiceImpl implements ItemService {
         Item itemInit = itemRepository
                 .findItemByIdWithComments(id)
                 .orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
-        if(userId != itemInit.getOwner().getId()) {
+        if (userId != itemInit.getOwner().getId()) {
             return ItemMapper.toItemDtoOwner(itemInit);
         }
 
@@ -102,8 +102,8 @@ public class ItemServiceImpl implements ItemService {
     public CommentDto addCommentToItem(Long itemId, CommentDto commentDto, Long userId) {
         // Check if the item, user exists
 
-        log.debug("Параметры, полученные в методе addCommentToItem: id - {}, userId - {}, текст комментария - {}"
-                , itemId, userId, commentDto.getText());
+        log.debug("Параметры, полученные в методе addCommentToItem: id - {}, userId - {}, текст комментария - {}",
+                itemId, userId, commentDto.getText());
         String text = commentDto.getText();
         if (text.isEmpty()) {
             throw new ValidException("Text musn't be empty");
@@ -154,8 +154,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public Item saveItem(ItemDto itemDto, long ownerId) {
 
-        log.debug("Параметры, полученные в методе saveItem: id - {}, userId - {}"
-                , itemDto.getId(), ownerId);
+        log.debug("Параметры, полученные в методе saveItem: id - {}, userId - {}", itemDto.getId(), ownerId);
 
         // Check if the User with the specified ownerId exists in the database
         User owner = userRepository.findById(ownerId)
@@ -171,7 +170,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public List<ItemDto> findByDescriptionContainingIgnoreCase(String searchText) {
-        if(searchText.isEmpty()) {
+        if (searchText.isEmpty()) {
             return new ArrayList<>();
         }
 
@@ -188,7 +187,7 @@ public class ItemServiceImpl implements ItemService {
             String descriptionLower = item.getDescription().toLowerCase();
 
             if (nameLower.contains(searchTextLower) || descriptionLower.contains(searchTextLower)) {
-                if(item.getAvailable() == Boolean.TRUE) {
+                if (item.getAvailable() == Boolean.TRUE) {
                     result.add(item);
                 }
             }

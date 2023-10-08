@@ -19,6 +19,7 @@ public interface ItemService {
     Item saveItem(ItemDto itemDto, long userId);
 
     CommentDto addCommentToItem(Long itemId, CommentDto commentDto, Long userId);
+
     List<ItemDto> findByDescriptionContainingIgnoreCase(String searchText);
 
 }

@@ -36,7 +36,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             "LEFT JOIN FETCH i.bookings " +
             "LEFT JOIN FETCH i.owner " +
             "WHERE i.id = :itemId")
-    Optional <Item> findBookingsInItemById(Long itemId);
+    Optional<Item> findBookingsInItemById(Long itemId);
 
     @Query(" SELECT DISTINCT item FROM Item item " +
             " LEFT JOIN FETCH item.bookings book " +
