@@ -48,13 +48,5 @@ public class ErrorHandlerController {
                 "Existence of user error", e.getMessage()
         );
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public ErrorResponse handleContraintViolationException(ConstraintViolationException ex) {
-        return new ErrorResponse(
-                "Length of description must be less than 1000 characters"
-        );
-    }
+    
 }
