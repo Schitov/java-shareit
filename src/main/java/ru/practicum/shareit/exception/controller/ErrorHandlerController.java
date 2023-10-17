@@ -2,14 +2,12 @@ package ru.practicum.shareit.exception.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.exceptions.ErrorResponse;
 import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
 import ru.practicum.shareit.exception.exceptions.ValidException;
 
-import javax.validation.ConstraintViolationException;
 import java.util.NoSuchElementException;
 
 
@@ -48,5 +46,5 @@ public class ErrorHandlerController {
                 "Existence of user error", e.getMessage()
         );
     }
-    
+
 }
