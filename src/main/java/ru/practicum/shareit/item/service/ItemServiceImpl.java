@@ -60,14 +60,14 @@ public class ItemServiceImpl implements ItemService {
 
         Item itemInit = itemRepository
                 .findItemByIdWithComments(id)
-                .orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
+                .orElseThrow(() -> new ExistenceOfObjectException("Item with id " + id + " not found"));
         if (userId != itemInit.getOwner().getId()) {
             return ItemMapper.toItemDtoOwner(itemInit);
         }
 
         Item item = itemRepository
                 .findBookingsInItemById(id)
-                .orElseThrow(() -> new ExistenceOfItemException("Item with id " + id + " not found"));
+                .orElseThrow(() -> new ExistenceOfObjectException("Item with id " + id + " not found"));
         List<BookingCreateDto> bookingCreateDto = item.getBookings()
                 .stream().filter(b -> b.getStatus() == Status.APPROVED)
                 .map(BookingMapper::toBookingCreateDto).collect(Collectors.toList());
@@ -112,7 +112,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ExistenceOfObjectException("Item not found."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ExistenceOfUserException("User not found."));
+                .orElseThrow(() -> new ExistenceOfObjectException("User not found."));
 
 
         boolean isPositive = item.getBookings().stream()
@@ -121,7 +121,7 @@ public class ItemServiceImpl implements ItemService {
 
         // Check if the user has rented the item
         if (!isPositive) {
-            throw new UnauthorizedAddingCommentException("You are not authorized to add a comment for this item.");
+            throw new ValidException("You are not authorized to add a comment for this item.");
         }
 
         Comment comment = ItemMapper.toNewComment(commentDto, user, item);
@@ -131,9 +131,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     public ItemDto updateItem(ItemDto itemDto, long itemId, long userId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ExistenceOfItemException("Not found item"));
+        Item item = itemRepository.findById(itemId).orElseThrow(() -> new ExistenceOfObjectException("Not found item"));
         if (item.getOwner().getId() != userId) {
-            throw new UnauthorizedOperationException("Unauthorized access");
+            throw new ExistenceOfObjectException("Unauthorized access");
         }
 
         log.debug("Item with number: {}", item);
@@ -158,7 +158,7 @@ public class ItemServiceImpl implements ItemService {
 
         // Check if the User with the specified ownerId exists in the database
         User owner = userRepository.findById(ownerId)
-                .orElseThrow(() -> new ExistenceOfUserException("User with id " + ownerId + " not found"));
+                .orElseThrow(() -> new ExistenceOfObjectException("User with id " + ownerId + " not found"));
 
         // Set the User as the owner of the new Item
         Item item = ItemMapper.toItem(itemDto);

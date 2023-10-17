@@ -3,12 +3,14 @@ package ru.practicum.shareit.item.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.exceptions.ValidException;
 import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -66,7 +68,12 @@ public class ItemController {
                          @RequestHeader(X_SHARER_USER_ID) long userId) {
         log.debug("Параметры, полученные в методе saveItem: itemDto - {}, serId - {}",
                 itemDto, userId);
-        return itemService.saveItem(itemDto, userId);
+
+        try {
+            return itemService.saveItem(itemDto, userId);
+        } catch (ConstraintViolationException ex) {
+            throw new ValidException(ex.getMessage());
+        }
     }
 
     @GetMapping("/search")

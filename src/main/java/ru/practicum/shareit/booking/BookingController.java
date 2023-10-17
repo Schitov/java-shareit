@@ -7,7 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingCreateDto;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.enums.State;
-import ru.practicum.shareit.exception.exceptions.UnsupportedStateException;
+import ru.practicum.shareit.exception.exceptions.ValidException;
 
 import java.util.List;
 
@@ -54,7 +54,7 @@ public class BookingController {
         try {
             return bookingService.getUsersBookings(userId, State.valueOf(state));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedStateException(String.format("Unknown state: %s", state));
+            throw new ValidException(String.format("Unknown state: %s", state));
         }
 
     }
@@ -67,7 +67,7 @@ public class BookingController {
         try {
             return bookingService.getUserItemsBookings(userId, State.valueOf(state));
         } catch (IllegalArgumentException e) {
-            throw new UnsupportedStateException(String.format("Unknown state: %s", state));
+            throw new ValidException(String.format("Unknown state: %s", state));
         }
     }
 }

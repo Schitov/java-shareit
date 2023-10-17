@@ -1,7 +1,12 @@
 package ru.practicum.shareit.item.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.user.model.User;
@@ -9,6 +14,7 @@ import ru.practicum.shareit.user.model.User;
 import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -27,6 +33,8 @@ public class Item {
     @NotEmpty
     String name;
     @NotEmpty
+//    @Size(max=1000)
+    @Size(max = 1000, message = "{validation.name.size.too_long}")
     String description;
     @NotNull
     Boolean available;

@@ -36,23 +36,23 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto saveBooking(BookingCreateDto bookingDto, long userId) {
         log.debug("UserId: {}. BookingDto: {}", userId, bookingDto.getId());
         if ((bookingDto.getEnd() == null) || (bookingDto.getStart() == null)) { // Дата начала и дата окончания заданы
-            throw new ExistenceDateException("Empty date");
+            throw new ValidException("Empty date");
         }
-        User user = userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("Not found user"));
-        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new ExistenceOfItemException("Not found Item"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new ExistenceOfObjectException("Not found user"));
+        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> new ExistenceOfObjectException("Not found Item"));
         log.debug("User: {uer}. Item: {}. BookingDto: {}", userId, item.getId(), bookingDto.getId());
 
         if (user.equals(item.getOwner())) {
-            throw new BookingException("Booking coudn't be completed");
+            throw new ExistenceOfObjectException("Booking coudn't be completed");
         } else if (bookingDto.getEnd().isBefore(bookingDto.getStart()) // Дата старта раньше даты окончания
                 || bookingDto.getEnd().equals(bookingDto.getStart())) {
-            throw new DateIntersectionException("Date intersection");
+            throw new ValidException("Date intersection");
         } else if (bookingDto.getStart().isBefore(LocalDateTime.now())) { // Дата начала и дата окончания аренды не могут находиться в прошлом
-            throw new DateIntersectionException("End date couldn't be in past");
+            throw new ValidException("End date couldn't be in past");
         } else if (item.getAvailable() && (user.getId() != item.getOwner().getId())) {
             return BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toNewBooking(bookingDto, user, item)));
         } else {
-            throw new BlockedException("Item is blocked");
+            throw new ValidException("Item is blocked");
         }
     }
 
@@ -61,16 +61,16 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto updateBookingStatus(long userId, long bookingId, Boolean isApproved) {
         Booking booking = bookingRepository
                 .findById(bookingId)
-                .orElseThrow(() -> new ExistenceOfBookingException("Booking is not found, sorry"));
+                .orElseThrow(() -> new ExistenceOfObjectException("Booking is not found, sorry"));
 
         log.debug("Значения в updateBookingStatus: " +
                 "User: {}. Item: {}. Approval: {}", userId, bookingId, isApproved);
 
         if (booking.getItem().getOwner().getId() != userId) {
-            throw new BookingException("Booking coudn't be completed");
+            throw new ExistenceOfObjectException("Booking coudn't be completed");
         }
         if (booking.getStatus() == Status.APPROVED) {
-            throw new BlockedException("Item is blocked");
+            throw new ValidException("Item is blocked");
         }
         booking.setStatus(isApproved ? Status.APPROVED : Status.REJECTED);
         return BookingMapper.toBookingDto(bookingRepository.save(booking));
@@ -84,9 +84,9 @@ public class BookingServiceImpl implements BookingService {
 
         Booking booking = bookingRepository
                 .findById(bookingId)
-                .orElseThrow(() -> new ExistenceOfBookingException("Booking isn't existed"));
+                .orElseThrow(() -> new ExistenceOfObjectException("Booking isn't existed"));
         if (booking.getBooker().getId() != userId && booking.getItem().getOwner().getId() != userId) {
-            throw new ExistenceOfUserException("User isn't existed");
+            throw new ExistenceOfObjectException("User isn't existed");
         }
         return BookingMapper.toBookingDto(booking);
     }
@@ -97,7 +97,7 @@ public class BookingServiceImpl implements BookingService {
         log.debug("Значения в getUsersBookings: " +
                 "userId: {}. State: {}", userId, state);
 
-        userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("User isn't existed"));
+        userRepository.findById(userId).orElseThrow(() -> new ExistenceOfObjectException("User isn't existed"));
         List<Booking> res = null;
         switch (state) {
             case CURRENT:
@@ -126,7 +126,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getUserItemsBookings(long userId, State state) {
-        userRepository.findById(userId).orElseThrow(() -> new ExistenceOfUserException("User isn't existed"));
+        userRepository.findById(userId).orElseThrow(() -> new ExistenceOfObjectException("User isn't existed"));
 
         log.debug("Значения в getUserItemsBookings: userId: {}. State: {}", userId, state);
 

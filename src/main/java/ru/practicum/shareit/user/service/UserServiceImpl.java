@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfUserException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
@@ -32,7 +31,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto obtainUser(long id) {
         return UserMapper.userToDto(userRepository.findById(id)
-                .orElseThrow(() -> new ExistenceOfUserException("User with id " + id + " not found")));
+                .orElseThrow(() -> new ExistenceOfObjectException("User with id " + id + " not found")));
     }
 
     @Override
