@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingCreateDto;
@@ -81,13 +80,12 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.deleteById(id);
     }
 
-    public List<ItemOwnerDto> getItemsByOwnerId(Long ownerId) {
+    public List<ItemOwnerDto> getItemsByOwnerId(long ownerId) {
 
         log.debug("Параметр, полученный в методе getItemsByOwnerId: id - {}", ownerId);
 
         return itemRepository
-                .findItemsWithBookings(itemRepository
-                        .findByOwnerId(ownerId, Sort.by("id")))
+                .findItemsByOwnerWithBookings(ownerId)
                 .stream()
                 .map(item -> ItemMapper.toItemDtoOwner(
                         item,

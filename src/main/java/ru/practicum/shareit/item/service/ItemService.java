@@ -10,7 +10,7 @@ import java.util.List;
 public interface ItemService {
     ItemOwnerDto obtainItem(long id, long userId);
 
-    List<ItemOwnerDto> getItemsByOwnerId(Long ownerId);
+    List<ItemOwnerDto> getItemsByOwnerId(long ownerId);
 
     void deleteItem(long id);
 
