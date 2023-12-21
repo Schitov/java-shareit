@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.exceptions.ErrorResponse;
 import ru.practicum.shareit.exception.exceptions.ExistenceOfObjectException;
-import ru.practicum.shareit.exception.exceptions.ExistenceOfUserException;
 import ru.practicum.shareit.exception.exceptions.ValidException;
+
+import java.util.NoSuchElementException;
 
 
 @RestControllerAdvice
@@ -15,32 +16,35 @@ public class ErrorHandlerController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIncorrectParameterException(final ValidException e) {
-        return new ErrorResponse(
-                "Valid error", e.getMessage()
-        );
+        if (e.getMessage().contains("Unknown state:")) {
+            return new ErrorResponse(
+                    e.getMessage()
+            );
+        } else if (e.getMessage().contains("validation.name.size.too_long}")) {
+            return new ErrorResponse(
+                    "Valid error", "Length of description must be less than 1000 characters"
+            );
+        } else {
+            return new ErrorResponse(
+                    "Valid error", e.getMessage()
+            );
+        }
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleExistenceOfObjects(final ExistenceOfObjectException e) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleExistenceOfObject(final ExistenceOfObjectException e) {
         return new ErrorResponse(
-                "Existence error", e.getMessage()
+                "Existence of object error", e.getMessage()
         );
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleExistenceOfObjects(final RuntimeException e) {
-        return new ErrorResponse(
-                "Other error", e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleExistenceOfUser(final ExistenceOfUserException e) {
+    public ErrorResponse handleExistenceOfUserId(final NoSuchElementException e) {
         return new ErrorResponse(
                 "Existence of user error", e.getMessage()
         );
     }
+
 }

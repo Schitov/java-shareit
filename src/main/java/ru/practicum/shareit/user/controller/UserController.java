@@ -25,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User obtainUser(@PathVariable long userId) {
+    public UserDto obtainUser(@PathVariable long userId) {
         log.debug("Параметр, полученный в методе obtainUser: {}", userId);
         return userService.obtainUser(userId);
     }

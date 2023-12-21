@@ -3,10 +3,14 @@ package ru.practicum.shareit.item.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.exceptions.ValidException;
+import ru.practicum.shareit.item.comment.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemOwnerDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemServiceImpl;
 
+import javax.validation.ConstraintViolationException;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -24,15 +28,16 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public Item obtainItem(@PathVariable long itemId) {
+    public ItemOwnerDto obtainItem(@PathVariable long itemId,
+                                   @RequestHeader(name = X_SHARER_USER_ID) long userId) {
         log.debug("Параметр, полученный в методе obtainItem: {}", itemId);
-        return itemService.obtainItem(itemId);
+        return itemService.obtainItem(itemId, userId);
     }
 
     @GetMapping()
-    public List<Item> obtainAllItems(@RequestHeader(X_SHARER_USER_ID) long userId) {
+    public List<ItemOwnerDto> obtainAllItems(@RequestHeader(X_SHARER_USER_ID) long userId) {
         log.debug("Параметр, полученный в методе obtainAllItems: {}", userId);
-        return itemService.obtainAllItems(userId);
+        return itemService.getItemsByOwnerId(userId);
     }
 
     @DeleteMapping("/{itemId}")
@@ -41,10 +46,18 @@ public class ItemController {
         itemService.deleteItem(itemId);
     }
 
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addCommentToItem(@PathVariable Long itemId,
+                                       @RequestBody CommentDto commentDto,
+                                       @RequestHeader(X_SHARER_USER_ID) Long userId) {
+        log.debug("For item {} of owner {} will be added comment: {}", itemId, userId, commentDto);
+        return itemService.addCommentToItem(itemId, commentDto, userId);
+    }
+
     @PatchMapping("/{itemId}")
-    public Item updateItem(@RequestBody ItemDto itemDto,
-                           @PathVariable long itemId,
-                           @RequestHeader(X_SHARER_USER_ID) long userId) {
+    public ItemDto updateItem(@RequestBody ItemDto itemDto,
+                              @PathVariable long itemId,
+                              @RequestHeader(X_SHARER_USER_ID) long userId) {
         log.debug("Параметры, полученные в методе updateItem: itemDto - {}, itemId - {}, userId - {}",
                 itemDto, itemId, userId);
         return itemService.updateItem(itemDto, itemId, userId);
@@ -55,13 +68,18 @@ public class ItemController {
                          @RequestHeader(X_SHARER_USER_ID) long userId) {
         log.debug("Параметры, полученные в методе saveItem: itemDto - {}, serId - {}",
                 itemDto, userId);
-        return itemService.saveItem(itemDto, userId);
+
+        try {
+            return itemService.saveItem(itemDto, userId);
+        } catch (ConstraintViolationException ex) {
+            throw new ValidException(ex.getMessage());
+        }
     }
 
     @GetMapping("/search")
-    public List<Item> searchItemsByText(@RequestParam String text) {
+    public List<ItemDto> searchItemsByText(@RequestParam String text) {
         log.debug("Параметр, полученный в методе searchItemsByText: {}", text);
-        return itemService.searchItemsByText(text);
+        return itemService.findByDescriptionContainingIgnoreCase(text);
     }
 
 }
