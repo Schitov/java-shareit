@@ -29,7 +29,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemOwnerDto obtainItem(@PathVariable long itemId,
-                                   @RequestHeader(name = "X-Sharer-User-Id") long userId) {
+                                   @RequestHeader(name = X_SHARER_USER_ID) long userId) {
         log.debug("Параметр, полученный в методе obtainItem: {}", itemId);
         return itemService.obtainItem(itemId, userId);
     }

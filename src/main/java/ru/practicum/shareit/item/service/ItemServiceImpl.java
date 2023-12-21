@@ -21,7 +21,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 import ru.practicum.shareit.user.storage.UserDaoStorage;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +70,7 @@ public class ItemServiceImpl implements ItemService {
         List<BookingCreateDto> bookingCreateDto = item.getBookings()
                 .stream().filter(b -> b.getStatus() == Status.APPROVED)
                 .map(BookingMapper::toBookingCreateDto).collect(Collectors.toList());
+        item.setComments(itemInit.getComments());
         ItemOwnerDto itemOwnerDto = ItemMapper.toItemDtoOwner(item, bookingCreateDto);
 
         return itemOwnerDto;
